@@ -11,6 +11,9 @@ from typing import Optional, Tuple
 import importlib
 
 from images.utils import add_text_to_image
+from decouple import config
+
+NEWS_KEY = config('NEWS_KEY')
 
 base_path = "./images/raw/"
 new_path = "./images/new/"
@@ -39,14 +42,14 @@ def draw_text(img, text,
 
 print("Starting...")
 
-newsapi = NewsApiClient(api_key='')
+newsapi = NewsApiClient(api_key=NEWS_KEY)
 
 end_day = datetime.datetime.now()
 d = datetime.timedelta(days=30)
 start_day = (end_day - d).strftime('%Y-%m-%d')
 end_day = end_day.strftime('%Y-%m-%d')
 
-all_articles = newsapi.get_everything(q='football',
+all_articles = newsapi.get_everything(q='KO Izzy UFC',
                                       from_param=start_day,
                                       to=end_day,
                                       language='en',
