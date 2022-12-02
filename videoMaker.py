@@ -10,6 +10,8 @@ import numpy as np
 from typing import Optional, Tuple
 import importlib
 from gtts import gTTS
+import moviepy.editor as mpe
+
 
 
 from images.utils import add_text_to_image
@@ -43,11 +45,25 @@ def gen_img():
         google_Crawler.crawl(keyword=title, max_num=20)
 
 gen_img()
-images = [img for img in os.listdir(image_folder) if img.endswith(".jpg")]
+images = []
+maxWidth = float('-inf')
+maxHeight = float('-inf')
+
+for img in os.listdir(image_folder):
+
+    frame = cv2.imread(image_folder+"/"+img)
+    height, width, layers = img.shape
+
+    maxWidth = max(maxWidth, width)
+    maxHeight = max(maxHeight, height)
+
+    images.append(img)
+
+
 frame = cv2.imread(os.path.join(image_folder, images[0]))
 height, width, layers = frame.shape
 
-video = cv2.VideoWriter(video_name, 0, 1, (width, height))
+video = cv2.VideoWriter(video_name, 0, 1, (maxWidth, maxHeight))
 
 for image in images:
     video.write(cv2.imread(os.path.join(image_folder, image)))
@@ -56,12 +72,17 @@ cv2.destroyAllWindows()
 video.release()
 #
 # # The text that you want to convert to audio
-# mytext = 'Bine ati venit la LacheMedia!'
-#
-# language = 'ro'
-#
-# myobj = gTTS(text=mytext, lang=language, slow=False)
-#
-# myobj.save("sound/welcome.mp3")
-#
-# os.system("start welcome.mp3")
+mytext = 'Bine ati venit la LacheMedia!'
+
+language = 'ro'
+
+myobj = gTTS(text=mytext, lang=language, slow=False)
+
+myobj.save("sound/welcome.mp3")
+
+os.system("start welcome.mp3")
+
+my_clip = mpe.VideoFileClip('video.avi')
+audio_background = mpe.AudioFileClip('welcome.mp3')
+final_audio = mpe.CompositeAudioClip([my_clip.audio, audio_background])
+final_clip = my_clip.set_audio(final_audio)
