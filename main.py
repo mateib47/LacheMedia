@@ -58,17 +58,10 @@ def process_img(titles):
         print(base_path + infile)
         img = cv2.imread(base_path + infile + '/000001.jpg')
 
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        bottomLeftCornerOfText = (10, 500)
-        fontScale = 1
-        fontColor = (255, 255, 255)
-        thickness = 5
-        lineType = 2
         print(titles)
 
         height, width, channels = img.shape
         pos = (10, int(height * 0.70))
-
         add_text_to_image(
             img,
             titles[i],
@@ -87,9 +80,12 @@ def process_img(titles):
             font_face=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
         )
 
-        cv2.imshow("img", img)
-        # cv2.imwrite(new_path + str(i) + "out.jpg", img)
+        cv2.imshow("img", image)
         cv2.waitKey(0)
+        print("Do you want to save the image?")
+        response = str(input())
+        if response == "yes":
+            cv2.imwrite(new_path + str(i) + "_out.jpg", image)
 
 
 
