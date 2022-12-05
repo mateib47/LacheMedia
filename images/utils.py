@@ -15,7 +15,6 @@ def add_text_to_image(
         outline_color_rgb: Optional[Tuple] = None,
         line_spacing: float = 1,
 ):
-
     OUTLINE_FONT_THICKNESS = 3 * font_thickness
     im_h, im_w = image_rgb.shape[:2]
     for line in label.splitlines():
@@ -32,7 +31,7 @@ def add_text_to_image(
             font_scale,
             get_text_size_font_thickness,
         )
-        line_height = line_height_no_baseline + baseline
+        line_height = line_height_no_baseline + baseline + 30
 
         if bg_color_rgb is not None and line:
             # === get actual mask sizes with regard to image crop

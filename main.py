@@ -22,23 +22,6 @@ new_path = "./images/new/"
 def write_img(name, arr):
     cv2.imwrite(new_path + name + '.jpg', arr, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
-
-def draw_text(img, text,
-              font=cv2.FONT_HERSHEY_PLAIN,
-              pos=(10, 400),
-              font_scale=3,
-              font_thickness=2,
-              text_color=(0, 255, 0),
-              text_color_bg=(0, 0, 0)
-              ):
-    x, y = pos
-    text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
-    text_w, text_h = text_size
-    cv2.rectangle(img, pos, (x + text_w, y + text_h), text_color_bg, -1)
-    cv2.putText(img, text, (x, y + text_h + font_scale - 1), font, font_scale, text_color, font_thickness)
-
-    return text_size
-
 def empty_dir(folder):
     for filename in os.listdir(folder):
         file_path = os.path.join(folder, filename)
@@ -50,43 +33,43 @@ def empty_dir(folder):
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
+
 def process_img(titles):
     for i in range(0, len(os.listdir(base_path))):
-        infile = os.listdir(base_path)[i]
-        print("file : " + infile)
-        name = infile.split('.')[0]
-        print(base_path + infile)
-        img = cv2.imread(base_path + infile + '/000001.jpg')
+        infolder = os.listdir(base_path)[i]
+        print("folder : " + infolder)
+        name = infolder.split('.')[0]
+        print(base_path + infolder)
+        for infile in os.listdir(base_path + infolder):
+            print(infile)
+            img = cv2.imread(base_path + infolder + "/" + infile)
 
-        print(titles)
+            height, width, channels = img.shape
+            pos = (10, int(height * 0.70))
+            add_text_to_image(
+                img,
+                titles[i],
+                font_color_rgb=(1, 32, 48),
+                top_left_xy=pos,
+                bg_color_rgb=(48, 165, 191),
+                line_spacing=1.5,
+            )
+            image = add_text_to_image(
+                img,
+                'LacheMedia',
+                font_color_rgb=(0, 255, 255),
+                outline_color_rgb=(255, 0, 0),
+                top_left_xy=(10, 10),
+                line_spacing=1.5,
+                font_face=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+            )
 
-        height, width, channels = img.shape
-        pos = (10, int(height * 0.70))
-        add_text_to_image(
-            img,
-            titles[i],
-            font_color_rgb=(1, 32, 48),
-            top_left_xy=pos,
-            bg_color_rgb=(48, 165, 191),
-            line_spacing=1.5,
-        )
-        image = add_text_to_image(
-            img,
-            'LacheMedia',
-            font_color_rgb=(0, 255, 255),
-            outline_color_rgb=(255, 0, 0),
-            top_left_xy=(10, 10),
-            line_spacing=1.5,
-            font_face=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
-        )
-
-        cv2.imshow("img", image)
-        cv2.waitKey(0)
-        print("Do you want to save the image?")
-        response = str(input())
-        if response == "yes":
-            cv2.imwrite(new_path + str(i) + "_out.jpg", image)
-
+            cv2.imshow("img", image)
+            cv2.waitKey(0)
+            print("Do you want to save the image?")
+            response = str(input())
+            if response == "yes":
+                cv2.imwrite(new_path + str(i) + "_out.jpg", image)
 
 
 print("Starting...")
@@ -94,10 +77,19 @@ print("Starting...")
 newsapi = NewsApiClient(api_key=NEWS_KEY)
 empty_dir(base_path)
 empty_dir(new_path)
-print("Query:")
-domain = str(input())
-print("Number of days:")
-days = int(input())
+# print("Query:")
+# domain = str(input())
+# print("Number of days:")
+# days = int(input())
+# print("Number of images:")
+# nr_img = int(input())
+# print("Number of articles:")
+# nr_art = int(input())
+
+domain = "world cup"
+days = 5
+nr_img = 3
+nr_art = 1
 
 end_day = datetime.datetime.now()
 d = datetime.timedelta(days=30)
@@ -110,12 +102,14 @@ all_articles = newsapi.get_everything(q=domain,
                                       language='en',
                                       sort_by='relevancy')
 titles = []
-for a in all_articles['articles'][0:5]:
-    title = a['title']
+for a in all_articles['articles'][0:nr_art]:
+    title = a['title'].replace("’", "'")
     titles.append(title)
     google_Crawler = GoogleImageCrawler(
         storage={'root_dir': r'images/raw/' + str(len(titles))})
-    google_Crawler.crawl(keyword=title, max_num=1)
+    filters = dict(
+        size='medium')
+    google_Crawler.crawl(keyword=title, max_num=nr_img, filters=filters)
 
+print(titles)
 process_img(titles)
-
