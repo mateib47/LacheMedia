@@ -9,11 +9,18 @@ import cv2
 import numpy as np
 from typing import Optional, Tuple
 import importlib
+import ast
 
 from images.utils import add_text_to_image
 from decouple import config
 
+import openai
+
+
 NEWS_KEY = config('NEWS_KEY')
+OPENAI_KEY = config('OPENAI_KEY')
+openai.api_key = OPENAI_KEY
+
 
 base_path = "./images/raw/"
 new_path = "./images/new/"
@@ -85,31 +92,52 @@ empty_dir(new_path)
 # nr_img = int(input())
 # print("Number of articles:")
 # nr_art = int(input())
+# print("Generation mode(0 - real news / 1 - openai generation):")
+# mode = int(input())
 
-domain = "world cup"
+domain = "psychology"
 days = 5
-nr_img = 3
-nr_art = 1
+nr_img = 1
+nr_art = 3
+mode = 1
 
 end_day = datetime.datetime.now()
 d = datetime.timedelta(days=30)
 start_day = (end_day - d).strftime('%Y-%m-%d')
 end_day = end_day.strftime('%Y-%m-%d')
 
-all_articles = newsapi.get_everything(q=domain,
-                                      from_param=start_day,
-                                      to=end_day,
-                                      language='en',
-                                      sort_by='relevancy')
 titles = []
-for a in all_articles['articles'][0:nr_art]:
-    title = a['title'].replace("’", "'")
-    titles.append(title)
+if mode == 0:
+    all_articles = newsapi.get_everything(q=domain,
+                                          from_param=start_day,
+                                          to=end_day,
+                                          language='en',
+                                          sort_by='relevancy',
+                                          page_size=nr_art)
+    for a in all_articles['articles'][0:nr_art]:
+        title = a['title'].replace("’", "'")
+        titles.append(title)
+else:
+    prompt = "Generate {} news headlines about {} in the format: [\"news1\", \"news2\",...]".format(nr_art,domain)
+    print(prompt)
+    titles = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=prompt,
+        temperature=0.7,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )["choices"][0]["text"]
+    titles = ast.literal_eval(titles)
+    print(titles)
+
+for t in titles:
     google_Crawler = GoogleImageCrawler(
         storage={'root_dir': r'images/raw/' + str(len(titles))})
     filters = dict(
         size='medium')
-    google_Crawler.crawl(keyword=title, max_num=nr_img, filters=filters)
+    google_Crawler.crawl(keyword=t, max_num=nr_img, filters=filters)
 
 print(titles)
 process_img(titles)
