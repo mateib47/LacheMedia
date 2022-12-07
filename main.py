@@ -12,6 +12,8 @@ import importlib
 import ast
 
 from images.utils import add_text_to_image
+from images.utils import empty_dir
+
 from decouple import config
 
 import openai
@@ -28,17 +30,6 @@ new_path = "./images/new/"
 
 def write_img(name, arr):
     cv2.imwrite(new_path + name + '.jpg', arr, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-
-def empty_dir(folder):
-    for filename in os.listdir(folder):
-        file_path = os.path.join(folder, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
 def process_img(titles):
