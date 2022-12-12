@@ -123,6 +123,17 @@ else:
     titles = ast.literal_eval(titles)
     print(titles)
 
+
+best_title = openai.Completion.create(
+  model="text-davinci-003",
+  prompt="choose the best news headline for a Instargram post from the list: {}".format(titles),
+  temperature=0.7,
+  max_tokens=256,
+  top_p=1,
+  frequency_penalty=0,
+  presence_penalty=0
+)["choices"][0]["text"]
+
 for t in titles:
     google_Crawler = GoogleImageCrawler(
         storage={'root_dir': r'images/raw/' + str(len(titles))})
@@ -131,4 +142,4 @@ for t in titles:
     google_Crawler.crawl(keyword=t, max_num=nr_img, filters=filters)
 
 print(titles)
-process_img(titles)
+process_img([best_title])

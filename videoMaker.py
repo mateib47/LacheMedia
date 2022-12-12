@@ -21,7 +21,6 @@ import openai
 OPENAI_KEY = config('OPENAI_KEY')
 openai.api_key = OPENAI_KEY
 
-
 from images.utils import add_text_to_image
 from decouple import config
 
@@ -47,7 +46,6 @@ def gen_img():
         size='=1080x1920',
         license='commercial,modify')
 
-
     all_articles = newsapi.get_everything(q=query,
                                           from_param=start_day,
                                           to=end_day,
@@ -56,23 +54,24 @@ def gen_img():
     titles = []
     for a in all_articles['articles'][0:1]:
         title = a['title']
+        print(a['description'])
         titles.append(title)
         # print(title)
         google_Crawler = GoogleImageCrawler(
             storage={'root_dir': r'videos/images/'})
-        google_Crawler.crawl(keyword=title, max_num=10)
+        google_Crawler.crawl(keyword=query, max_num=10)
+
 
 gen_img()
 images = []
 img_clips = []
-path_list=[]
-
+path_list = []
 
 # maxWidth = float('-inf')
 # maxHeight = float('-inf')
 
 for img in os.listdir(image_folder):
-    frame = cv2.imread(image_folder+"/"+img)
+    frame = cv2.imread(image_folder + "/" + img)
     height, width, layers = frame.shape
     if img.endswith(".jpg"):
         path_list.append(os.path.join(image_folder, img))
@@ -83,7 +82,6 @@ for img_path in path_list:
 
 video_slides = concatenate_videoclips(img_clips, method='compose')
 video_slides.write_videofile("output_video.mp4", fps=24)
-
 
 #
 # frame = cv2.imread(os.path.join(image_folder, images[0]))
@@ -109,7 +107,6 @@ video_script = openai.Completion.create(
     frequency_penalty=0,
     presence_penalty=0
 )["choices"][0]["text"]
-
 
 language = 'en'
 
